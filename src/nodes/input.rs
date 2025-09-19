@@ -25,4 +25,10 @@ impl <N: In> Connect<N> for InputNode<N> {
     fn connect(&mut self, weight: f32, node: InRef<N>) {
         self.next_nodes.push(node.clone())
     }
+    
+    fn forward_prop(&self, x: f32) {
+        for n in self.next_nodes {
+            n.2.recieve(activation(x) * n.1);
+        }
+    }
 }
