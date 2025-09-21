@@ -4,31 +4,36 @@ use std::{
     cell::RefCell
 };
 
-pub (mod) trait In {
-    fn comp_in(&self) -> f32;
-    fn recieve(x: f32);
+use super::output::*;
+
+pub (super) trait In {
+    fn activation(&self, x: f32) -> f32;
+    fn recieve(&mut self, x: f32);
 }
 
-type InRef<N: In> = Rc<RefCell<Box<N>>>;
+pub (super) type InRef<N> = Rc<RefCell<Box<N>>>;
 
-pub (mod) struct InputNode<N: In>: In + Out + Connect {
+pub (super) struct InputNode<N: In> {
     next_nodes: Vec<(f32, InRef<N>)>,
 }
 
 impl <N: In> In for InputNode<N> {
-    fn activation(x: f32) -> f32 {
+    fn activation(&self, x: f32) -> f32 {
         x
+    }
+    fn recieve(&mut self, x: f32) {
+        self.forward_prop(x)
     }
 }
 
 impl <N: In> Connect<N> for InputNode<N> {
     fn connect(&mut self, weight: f32, node: InRef<N>) {
-        self.next_nodes.push(node.clone())
+        self.next_nodes.push((weight, node.clone()))
     }
     
-    fn forward_prop(&self, x: f32) {
-        for n in self.next_nodes {
-            n.2.recieve(activation(x) * n.1);
+    fn forward_prop(&mut self, x: f32) {
+        for n in &self.next_nodes {
+            n.1.borrow_mut().recieve(self.activation(x) * n.0);
         }
     }
 }
