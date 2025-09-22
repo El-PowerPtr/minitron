@@ -7,7 +7,6 @@ use std::{
 use super::output::*;
 
 pub (super) trait In {
-    fn activation(&self, x: f32) -> f32;
     fn recieve(&mut self, x: f32);
 }
 
@@ -18,11 +17,14 @@ pub (super) struct InputNode<N: In> {
 }
 
 impl <N: In> In for InputNode<N> {
-    fn activation(&self, x: f32) -> f32 {
-        x
-    }
     fn recieve(&mut self, x: f32) {
         self.forward_prop(x)
+    }
+}
+
+impl <N: In> Out for InputNode<N> {
+    fn activation(&self, x: f32) -> f32 {
+        x
     }
 }
 

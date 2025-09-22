@@ -13,3 +13,20 @@ pub (super) trait Connect<N: In>{
 pub fn sigmoid(x: f32) -> f32 {
     1.0 / (1.0 + x.exp())
 }
+
+pub struct OutputNode {
+    bias: f32,
+    inputs: Vec<f32>
+}
+
+impl Out for OutputNode {
+     fn activation(&self, x: f32) -> f32 {
+        sigmoid(x) - self.bias
+    }
+}
+
+impl In for OutputNode {
+    fn recieve(&mut self, x: f32) {
+        self.inputs.push(x)
+    }
+}

@@ -5,19 +5,16 @@ use super::{
 
 struct HiddenNode <N: In> {
     inputs: Vec<f32>,
-    threshold: f32,
+    bias: f32,
     outputs: Vec<(f32,InRef<N>)>
+}
+impl <N: In> Out for HiddenNode<N>{
+    fn activation(&self, x: f32) -> f32 {
+        sigmoid(x) - self.bias
+    }
 }
 
 impl <N: In> In for HiddenNode<N> {
-    fn activation(&self, x: f32) -> f32 {
-        let result = sigmoid(x);
-        if result > self.threshold {
-            result
-        } else {
-            0.0
-        }
-    }
     fn recieve(&mut self, x: f32) {
         self.inputs.push(x)
     }
