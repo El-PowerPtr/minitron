@@ -11,7 +11,7 @@ pub (super) trait Connect<N: In>{
 
 #[inline]
 pub fn sigmoid(x: f32) -> f32 {
-    1.0 / (1.0 + x.exp())
+    1.0 / (1.0 + (-x).exp())
 }
 
 pub struct OutputNode {
