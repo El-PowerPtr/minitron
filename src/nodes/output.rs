@@ -14,6 +14,13 @@ pub fn sigmoid(x: f32) -> f32 {
     1.0 / (1.0 + (-x).exp())
 }
 
+#[inline]
+pub fn sigmoid_derivative(x: f32) -> f32 {
+    let neg_exp = (-x).exp();
+    let base = (1 + neg_exp);
+    neg_exp / (base * base)
+}
+
 pub struct OutputNode {
     bias: f32,
     inputs: Vec<f32>
