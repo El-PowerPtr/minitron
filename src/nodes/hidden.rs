@@ -10,7 +10,7 @@ struct HiddenNode <N: In> {
 }
 impl <N: In> Out for HiddenNode<N>{
     fn activation(&self, x: f32) -> f32 {
-        sigmoid(x) - self.bias
+        sigmoid(x - self.bias)
     }
 }
 

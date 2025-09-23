@@ -21,7 +21,7 @@ pub struct OutputNode {
 
 impl Out for OutputNode {
      fn activation(&self, x: f32) -> f32 {
-        sigmoid(x) - self.bias
+        sigmoid(x - self.bias)
     }
 }
 
