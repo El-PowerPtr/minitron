@@ -17,7 +17,7 @@ pub fn sigmoid(x: f32) -> f32 {
 #[inline]
 pub fn sigmoid_derivative(x: f32) -> f32 {
     let neg_exp = (-x).exp();
-    let base = (1 + neg_exp);
+    let base = 1.0 + neg_exp;
     neg_exp / (base * base)
 }
 
