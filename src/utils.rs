@@ -1,13 +1,8 @@
-#![allow(dead_code)]
-mod nodes;
-mod layers;
-mod conn;
-
 use std::{
     boxed::Box,
     rc::Rc,
     cell::RefCell,
-    sync::Arc,
+    std::sync::Arc,
 };
 
 pub type MultiRef<N> = Rc<RefCell<Box<N>>>;

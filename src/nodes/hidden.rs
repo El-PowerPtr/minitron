@@ -2,35 +2,37 @@ use super::{
     input::*, 
     output::*
 };
+use crate::conn::connect::Connect;
+use crate::conn::connection::Connection;
 
-struct HiddenNode <N: In> {
-    inputs: Vec<f32>,
+pub struct HiddenNode <I: Out + Connect, O: In> {
+    inputs: Vec<Connection<I,Self>>,
+    val: f32,
     bias: f32,
-    outputs: Vec<(f32,InRef<N>)>
+    outputs: Vec<Connection<Self,O>>
 }
-impl <N: In> Out for HiddenNode<N>{
+
+impl <O: In, I: Out + Connect> Out for HiddenNode<I,O>{
     fn activation(&self, x: f32) -> f32 {
-        sigmoid(x - self.bias)
+        sigmoid(x + self.bias)
     }
 }
 
-impl <N: In> In for HiddenNode<N> {
+impl <O: In, I: Out + Connect> In for HiddenNode<I,O> {
     fn recieve(&mut self, x: f32) {
-        self.inputs.push(x)
+        self.val += x;
     }
 }
 
-impl <N: In> Connect<N> for HiddenNode<N> {
-    fn connect(&mut self, weight: f32, node: InRef<N>) {
-        self.outputs.push((weight, node.clone()))
-    }
-    
+
+impl <O: In, I: Out + Connect> Connect for HiddenNode<I, O> {
     fn forward_prop(&mut self, x: f32) {
         if x > 0.0 {
             for n in &mut self.outputs {
-                n.1.borrow_mut().recieve(x * n.0);
+                n.to.borrow_mut().recieve((x + self.bias) * n.weight);
             }
         }
         
     }
 }
+

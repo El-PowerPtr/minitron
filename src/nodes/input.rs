@@ -1,19 +1,13 @@
-use std::{
-    boxed::Box,
-    rc::Rc,
-    cell::RefCell
-};
-
 use super::output::*;
+use crate::conn::connect::Connect;
+use crate::conn::connection::Connection;
 
-pub (super) trait In {
+pub trait In {
     fn recieve(&mut self, x: f32);
 }
 
-pub (super) type InRef<N> = Rc<RefCell<Box<N>>>;
-
-pub (super) struct InputNode<N: In> {
-    next_nodes: Vec<(f32, InRef<N>)>,
+pub struct InputNode<N: In> {
+    next_nodes: Vec<Connection<Self,N>>,
 }
 
 impl <N: In> In for InputNode<N> {
@@ -28,14 +22,10 @@ impl <N: In> Out for InputNode<N> {
     }
 }
 
-impl <N: In> Connect<N> for InputNode<N> {
-    fn connect(&mut self, weight: f32, node: InRef<N>) {
-        self.next_nodes.push((weight, node.clone()))
-    }
-    
+impl <N: In> Connect for InputNode<N> {
     fn forward_prop(&mut self, x: f32) {
         for n in &self.next_nodes {
-            n.1.borrow_mut().recieve(self.activation(x) * n.0);
+            n.to.borrow_mut().recieve(self.activation(x) * n.weight);
         }
     }
 }
