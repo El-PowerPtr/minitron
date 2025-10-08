@@ -20,6 +20,9 @@ impl <N: In> Out for InputNode<N> {
     fn activation(&self, x: f32) -> f32 {
         x
     }
+    fn local_gradient(&self, err: f32) -> f32 {
+        err 
+    }
 }
 
 impl <N: In> Connect for InputNode<N> {
