@@ -1,8 +1,9 @@
 use std::borrow::BorrowMut;
 use super::{
-    input::*, 
+    input::In, 
     output::*,
     learn::*,
+    input_node::InputNode,
 };
 use crate::SharedRef;
 use crate::learning_rate::LearningRateManager;

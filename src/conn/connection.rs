@@ -1,10 +1,8 @@
 use crate::{
     MultiRef,
     nodes::{
-        input::{
-            In,
-            InputNode,
-        },
+        input::In,
+        input_node::InputNode,
         output::Out,
         learn::*,
     },

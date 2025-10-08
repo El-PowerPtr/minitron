@@ -1,4 +1,6 @@
-pub mod input;
 pub mod output;
-pub mod hidden;
+pub mod input;
+pub mod input_node;
+pub mod hidden_node;
+pub mod output_node;
 pub mod learn;
