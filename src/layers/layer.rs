@@ -5,5 +5,5 @@ use crate::{
 
 pub trait Layer <N, L: LearningRateManager>{
     fn link<T>(&mut self, other: &mut impl Layer<T, L>);
-    fn fresh(learning_manager: SharedRef<N>) -> Self;
+    fn fresh(neuron_ammount: i32,learning_manager: SharedRef<N>) -> Self;
 }
