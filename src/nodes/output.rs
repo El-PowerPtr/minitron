@@ -1,7 +1,10 @@
 pub trait Out{
     fn activation(&self, x: f32) -> f32;
     fn local_gradient(&self, err: f32) ->f32;
+    fn forward_prop(&mut self, val: f32);
 }
+
+    
 
 #[inline]
 pub fn sigmoid(x: f32) -> f32 {

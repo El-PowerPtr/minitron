@@ -2,7 +2,6 @@ use super::{
     output::Out,
     input::In,
 };
-use crate::conn::connect::Connect;
 use crate::conn::connection::Connection;
 
 pub struct InputNode<N: In> {
@@ -22,9 +21,7 @@ impl <N: In> Out for InputNode<N> {
     fn local_gradient(&self, err: f32) -> f32 {
         err 
     }
-}
-
-impl <N: In> Connect for InputNode<N> {
+    
     fn forward_prop(&mut self, x: f32) {
         for n in &self.next_nodes {
             n.to.borrow_mut().recieve(self.activation(x) * n.weight);

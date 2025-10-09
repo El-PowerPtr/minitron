@@ -7,10 +7,9 @@ use super::{
 };
 use crate::SharedRef;
 use crate::learning_rate::LearningRateManager;
-use crate::conn::connect::Connect;
 use crate::conn::connection::Connection;
 
-pub struct HiddenNode <I: Out + Connect, M: LearningRateManager, O: In> {
+pub struct HiddenNode <I: Out, M: LearningRateManager, O: In> {
     inputs: Vec<Connection<I,Self>>,
     learning_manager: SharedRef<M>,
     val: f32,
@@ -19,7 +18,7 @@ pub struct HiddenNode <I: Out + Connect, M: LearningRateManager, O: In> {
     outputs: Vec<Connection<Self,O>>
 }
 
-impl <I: Out + Connect, M: LearningRateManager, O: In> Out for HiddenNode<I,M,O>{
+impl <I: Out, M: LearningRateManager, O: In> Out for HiddenNode<I,M,O>{
     fn activation(&self, x: f32) -> f32 {
         sigmoid(x + self.bias)
     }
@@ -27,15 +26,22 @@ impl <I: Out + Connect, M: LearningRateManager, O: In> Out for HiddenNode<I,M,O>
     fn local_gradient(&self, err: f32) -> f32 {
         err * sigmoid_derivative(self.val + self.bias)
     }
+    
+    fn forward_prop(&mut self, x: f32) {
+        let sent_x = self.activation(x);
+            for n in &mut self.outputs {
+                n.borrow_mut().send_fronward(sent_x);
+            }
+    }
 }
 
-impl <I: Out + Connect, M: LearningRateManager, O: In> In for HiddenNode<I,M,O> {
+impl <I: Out, M: LearningRateManager, O: In> In for HiddenNode<I,M,O> {
     fn recieve(&mut self, x: f32) {
         self.val += x;
     }
 }
 
-impl <I: Out + Connect, M: LearningRateManager, O: In> Learn for HiddenNode<I,M,O> {
+impl <I: Out, M: LearningRateManager, O: In> Learn for HiddenNode<I,M,O> {
     fn learn(&mut self){
         let local_gradient = self.local_gradient(self.acc_err);
         self.bias -= self.learning_manager.borrow().learning_rate() * local_gradient;
@@ -46,7 +52,7 @@ impl <I: Out + Connect, M: LearningRateManager, O: In> Learn for HiddenNode<I,M,
     }
 }
 
-impl <I: Out + Connect + Learn, M: LearningRateManager, O: In> BackProp for HiddenNode <I,M,O>{
+impl <I: Out + Learn, M: LearningRateManager, O: In> BackProp for HiddenNode <I,M,O>{
     fn send_feedback(&mut self){
         for i in &mut self.inputs {
             i.get_feedback(self.acc_err);
@@ -59,14 +65,5 @@ impl <_Self: In, M: LearningRateManager, O: In> BackProp for HiddenNode <InputNo
         for i in &mut self.inputs {
             i.get_feedback(self.acc_err);
         };
-    }
-}
-
-impl <I: Out + Connect, M: LearningRateManager, O: In> Connect for HiddenNode<I, M, O> {
-    fn forward_prop(&mut self, x: f32) {
-        let sent_x = self.activation(x);
-            for n in &mut self.outputs {
-                n.borrow_mut().send_fronward(sent_x);
-            }
     }
 }

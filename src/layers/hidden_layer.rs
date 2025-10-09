@@ -4,7 +4,6 @@ use crate::{
         output::Out,
         learn::*,
     },
-    conn::connect::Connect,
     learning_rate::LearningRateManager,
     SharedRef,
     MultiRef,
@@ -12,7 +11,7 @@ use crate::{
 
 use super::layer::*;
 
-struct HiddenLayer<N: In + Out + Connect + BackProp, M: LearningRateManager>{
+struct HiddenLayer<N: In + Out + BackProp, M: LearningRateManager>{
     learning_manager: SharedRef<M>,
     nodes: Vec<MultiRef<N>>,
 }
