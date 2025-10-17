@@ -9,6 +9,15 @@ pub struct InputNode<N: In> {
     next_nodes: Vec<Connection<Self,N>>,
 }
 
+impl <N: In>InputNode<N> {
+    fn new() -> Self {
+        InputNode{
+            val: 0.0,
+            next_nodes: vec![],
+        }
+    }
+}
+
 impl <N: In> In for InputNode<N> {
     fn recieve(&mut self, x: f32) {
         self.val = x;
