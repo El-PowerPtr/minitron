@@ -3,6 +3,7 @@ use super::{
     input::In, 
     output::*,
     learn::*,
+    node::Node,
     input_node::InputNode,
 };
 use crate::SharedRef;
@@ -10,12 +11,25 @@ use crate::learning_rate::LearningRateManager;
 use crate::conn::connection::Connection;
 
 pub struct HiddenNode <I: Out, M: LearningRateManager, O: In> {
-    inputs: Vec<Connection<I,Self>>,
+    inputs: Vec<SharedRef<Connection<I,Self>>>,
     learning_manager: SharedRef<M>,
     val: f32,
     bias: f32,
     acc_err: f32,
-    outputs: Vec<Connection<Self,O>>
+    outputs: Vec<SharedRef<Connection<Self,O>>>
+}
+
+impl <I: Out, M: LearningRateManager, O: In> Node<M> for HiddenNode<I,M,O>{
+    fn new(bias: f32, manager: SharedRef<M>) -> Self{
+        HiddenNode {
+            inputs: vec![],
+            learning_manager: manager.clone(),
+            val: 0.0,
+            bias,
+            acc_err: 0.0,
+            outputs: vec![]
+        }
+    }
 }
 
 impl <I: Out, M: LearningRateManager, O: In> Out for HiddenNode<I,M,O>{
@@ -30,7 +44,7 @@ impl <I: Out, M: LearningRateManager, O: In> Out for HiddenNode<I,M,O>{
     fn forward_prop(&mut self, x: f32) {
         let sent_x = self.activation(x);
             for n in &mut self.outputs {
-                n.borrow_mut().send_fronward(sent_x);
+                (**n).borrow_mut().send_fronward(sent_x);
             }
     }
 }
@@ -55,7 +69,7 @@ impl <I: Out, M: LearningRateManager, O: In> Learn for HiddenNode<I,M,O> {
 impl <I: Out + Learn, M: LearningRateManager, O: In> BackProp for HiddenNode <I,M,O>{
     fn send_feedback(&mut self){
         for i in &mut self.inputs {
-            i.get_feedback(self.acc_err);
+            (**i).borrow_mut().get_feedback(self.acc_err);
         };
     }
 }
@@ -63,7 +77,7 @@ impl <I: Out + Learn, M: LearningRateManager, O: In> BackProp for HiddenNode <I,
 impl <_Self: In, M: LearningRateManager, O: In> BackProp for HiddenNode <InputNode<_Self>,M,O>{
     fn send_feedback(&mut self){
         for i in &mut self.inputs {
-            i.get_feedback(self.acc_err);
+            (**i).borrow_mut().get_feedback(self.acc_err);
         };
     }
 }
