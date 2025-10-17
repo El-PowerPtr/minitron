@@ -21,6 +21,7 @@ pub struct OutputNode<I: Out,M: LearningRateManager,T> {
 }
 
 impl <I: Out, M:LearningRateManager, T> Out for OutputNode<I,M,T> {
+    #[inline]
     fn activation(&self, x: f32) -> f32 {
         sigmoid(x - self.bias)
     }
@@ -29,8 +30,8 @@ impl <I: Out, M:LearningRateManager, T> Out for OutputNode<I,M,T> {
         err * sigmoid_derivative(self.val + self.bias)
     }
     
-    fn forward_prop(&mut self, x: f32) {
-        self.label.borrow_mut().recieve(self.activation(x));
+    fn forward_prop(&mut self) {
+        self.label.borrow_mut().recieve(self.activation(self.val));
     }
 }
 

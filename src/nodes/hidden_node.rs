@@ -32,6 +32,7 @@ impl <I: Out, M: LearningRateManager, O: In> Node<M> for HiddenNode<I,M,O>{
 }
 
 impl <I: Out, M: LearningRateManager, O: In> Out for HiddenNode<I,M,O>{
+    #[inline]
     fn activation(&self, x: f32) -> f32 {
         sigmoid(x + self.bias)
     }
@@ -40,8 +41,8 @@ impl <I: Out, M: LearningRateManager, O: In> Out for HiddenNode<I,M,O>{
         err * sigmoid_derivative(self.val + self.bias)
     }
     
-    fn forward_prop(&mut self, x: f32) {
-        let sent_x = self.activation(x);
+    fn forward_prop(&mut self) {
+        let sent_x = self.activation(self.val);
             for n in &mut self.outputs {
                 (**n).borrow_mut().send_fronward(sent_x);
             }

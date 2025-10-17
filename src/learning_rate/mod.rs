@@ -23,10 +23,6 @@ impl RandomGen{
         self.seed
     }
     
-    pub fn rand_float(&mut self) -> f32{
-        (self.next_step() as f32) / 1.0001
-    }
-    
     pub fn new() -> RandomGen{
         RandomGen {
             seed: SystemTime::now()
@@ -34,5 +30,11 @@ impl RandomGen{
                     .unwrap_or(Duration::ZERO)
                     .as_nanos() as u32
         }
+    }
+}
+
+impl Random for RandomGen {
+    fn rand_float(&mut self) -> f32{
+        (self.next_step() as f32) / 1.0001
     }
 }

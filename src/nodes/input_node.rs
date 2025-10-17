@@ -5,26 +5,29 @@ use super::{
 use crate::conn::connection::Connection;
 
 pub struct InputNode<N: In> {
+    val: f32,
     next_nodes: Vec<Connection<Self,N>>,
 }
 
 impl <N: In> In for InputNode<N> {
     fn recieve(&mut self, x: f32) {
-        self.forward_prop(x)
+        self.val = x;
     }
 }
 
 impl <N: In> Out for InputNode<N> {
+    #[inline]
     fn activation(&self, x: f32) -> f32 {
         x
     }
+    #[inline]
     fn local_gradient(&self, err: f32) -> f32 {
         err 
     }
     
-    fn forward_prop(&mut self, x: f32) {
+    fn forward_prop(&mut self) {
         for n in &self.next_nodes {
-            n.to.borrow_mut().recieve(self.activation(x) * n.weight);
+            n.to.borrow_mut().recieve(self.activation(self.val) * n.weight);
         }
     }
 }

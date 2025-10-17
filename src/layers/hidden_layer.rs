@@ -60,4 +60,9 @@ impl <N: Connectable + Node<M> + Learn + BackProp, M: LearningRateManager + Rand
         }
         this
     }
+    fn pass_info(&mut self) {
+        for node in &mut self.nodes {
+            (**node).borrow_mut().forward_prop();
+        }
+    }
 }
