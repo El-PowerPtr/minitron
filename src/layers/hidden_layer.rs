@@ -48,7 +48,16 @@ impl <N: Connectable + Node<M> + Learn + BackProp, M: LearningRateManager + Rand
         &self.nodes
     }
     
-    fn fresh(neuron_ammount: i32,learning_manager: SharedRef<N>) -> Self{
-        todo!()
+    fn fresh(neuron_ammount: i32,learning_manager: SharedRef<M>) -> Self{
+        let mut this = HiddenLayer {
+            learning_manager,
+            nodes: vec![],
+        };
+        for _ in 0..neuron_ammount {
+            let node = N::new(this.learning_manager.borrow_mut().rand_float(), this.learning_manager.clone());
+            let node_ref = new_multi_ref(node);
+            this.nodes.push(node_ref);
+        }
+        this
     }
 }
