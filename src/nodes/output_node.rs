@@ -1,12 +1,12 @@
 use super::{
-    input::*,
-    output::*,
-    learn::*,
+    input::In,
+    output::{Out, sigmoid, sigmoid_derivative},
+    learn::{Learn, BackProp},
     label::Label,
 };
 use crate::{
     conn::connection::Connection,
-    learning_rate::*,
+    learning_rate::LearningRateManager,
     SharedRef,
     MultiRef,
 };
@@ -37,7 +37,7 @@ impl <I: Out, M:LearningRateManager, T> Out for OutputNode<I,M,T> {
 
 impl <I: Out, M:LearningRateManager, T> In for OutputNode<I,M,T>  {
     fn recieve(&mut self, x: f32) {
-        self.val += x
+        self.val += x;
     }
 }
 

@@ -5,14 +5,22 @@ use crate::{
         input::In,
         input_node::InputNode,
         output::Out,
-        learn::*,
+        learn::{Learn, BackProp},
     },
 };
 
-pub trait Connectable{
-    fn add_connection<F: Out, T: In>(&mut self, connection: SharedRef<Connection<F,T>>);
+pub trait ConnectsTo: Sized + Out{
+    type N: ConnectsFrom;
+
+    fn connect_to(&mut self,conn: SharedRef<Connection<Self, Self::N>>);
 }
 
+pub 
+trait ConnectsFrom: Sized + In{
+    type N: ConnectsTo;
+    
+    fn connect_from(&mut self,conn: SharedRef<Connection<Self::N, Self>>);
+}
 pub struct Connection <F: Out,T: In> {
     pub from: MultiRef<F>,
     pub weight: f32,
@@ -40,7 +48,7 @@ impl <F: Out, T: In + BackProp> Learn for Connection <F, T>{
     }
 }
 
-impl <T: In> BackProp for Connection <InputNode<T>, T>{
+impl <T: ConnectsFrom> BackProp for Connection <InputNode<T>, T>{
     fn send_feedback(&mut self){
         //nothing
     }
@@ -48,7 +56,7 @@ impl <T: In> BackProp for Connection <InputNode<T>, T>{
 
 impl <F:  Out + Learn, T: In> BackProp for Connection<F,T>{
     fn send_feedback(&mut self){
-        self.from.borrow_mut().get_feedback(self.err * self.weight)
+        self.from.borrow_mut().get_feedback(self.err * self.weight);
     }
 }
 

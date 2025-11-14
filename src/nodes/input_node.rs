@@ -2,15 +2,22 @@ use super::{
     output::Out,
     input::In,
 };
-use crate::conn::connection::Connection;
+use crate::conn::connection::{
+    Connection, 
+    ConnectsFrom,
+    ConnectsTo,
+};
+use crate::{
+    SharedRef,
+};
 
-pub struct InputNode<N: In> {
+pub struct InputNode<N: ConnectsFrom> {
     val: f32,
-    next_nodes: Vec<Connection<Self,N>>,
+    next_nodes: Vec<SharedRef<Connection<Self,N>>>,
 }
 
-impl <N: In>InputNode<N> {
-    fn new() -> Self {
+impl <N: ConnectsFrom>InputNode<N> {
+    pub fn new() -> Self {
         InputNode{
             val: 0.0,
             next_nodes: vec![],
@@ -18,13 +25,20 @@ impl <N: In>InputNode<N> {
     }
 }
 
-impl <N: In> In for InputNode<N> {
+impl <N: ConnectsFrom> In for InputNode<N> {
     fn recieve(&mut self, x: f32) {
         self.val = x;
     }
 }
 
-impl <N: In> Out for InputNode<N> {
+impl <N: ConnectsFrom> ConnectsTo for InputNode<N>{
+    type N = N;
+    fn connect_to(&mut self, connection: SharedRef<Connection<Self, Self::N>>){
+        self.next_nodes.push(connection);
+    }
+}
+
+impl <N: ConnectsFrom> Out for InputNode<N> {
     #[inline]
     fn activation(&self, x: f32) -> f32 {
         x
@@ -36,7 +50,7 @@ impl <N: In> Out for InputNode<N> {
     
     fn forward_prop(&mut self) {
         for n in &self.next_nodes {
-            n.to.borrow_mut().recieve(self.activation(self.val) * n.weight);
+            (**n).borrow_mut().send_fronward(self.val);
         }
     }
 }
