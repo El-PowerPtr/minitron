@@ -1,17 +1,23 @@
-use super::{
-    input::In,
-    output::Out,
-    learn::Learn,
-};
-use crate::MultiRef;
 
-
-pub trait Label<T>: In {
-    fn label(&self) -> T;
+#[derive(Clone)]
+pub enum Label<T: Clone>{
+    Training {
+        label: T,
+        expected_val: f32,
+    },
+    Usage {
+        label: T,
+    }
 }
 
-pub struct TrainingLabel<N:Learn + Out, T>{
-    label: T,
-    expected_val: f32,
-    related_node:  MultiRef<N>,
+impl<T: Clone> Label <T> {
+    pub fn to_usage(&self) -> Self {
+        if let Label::Training{label, ..} = self {
+            Label::Usage {
+                label: label.clone(),
+            }
+        } else {
+            self.clone()
+        }
+    }
 }

@@ -1,7 +1,6 @@
 use crate::{
     conn::connection::ConnectsFrom,
     nodes::{
-        input::In,
         output::Out,
         input_node::InputNode,
     },
@@ -15,7 +14,7 @@ use crate::{
 };
 use super::layer::Layer;
 
-pub struct InputLayer<N: ConnectsFrom + In, M: LearningRateManager + Random> {
+pub struct InputLayer<N: ConnectsFrom, M: LearningRateManager + Random> {
     learning_manager: SharedRef<M>,
     nodes: Vec<MultiRef<InputNode<N>>>,
 }
