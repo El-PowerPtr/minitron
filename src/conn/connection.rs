@@ -1,68 +1,46 @@
-use crate::{
-    MultiRef,
-    SharedRef,
-    nodes::{
-        input::In,
-        input_node::InputNode,
-        output::Out,
-        learn::{Learn, BackProp},
-    },
-};
+use crate::Random;
 
-pub trait ConnectsTo: Sized + Out{
-    type N: ConnectsFrom;
+pub struct WeightMatrix(Vec<Vec<f32>>);
 
-    fn connect_to(&mut self,conn: SharedRef<Connection<Self, Self::N>>);
-}
-
-pub 
-trait ConnectsFrom: Sized + In{
-    type N: ConnectsTo;
-    
-    fn connect_from(&mut self,conn: SharedRef<Connection<Self::N, Self>>);
-}
-pub struct Connection <F: Out,T: In> {
-    pub from: MultiRef<F>,
-    pub weight: f32,
-    err: f32,
-    pub to: MultiRef<T>,
-}
-
-impl <F: Out,T: In>Connection<F,T>{
-    pub fn new(from: MultiRef<F>, to: MultiRef<T>, weight: f32) -> Self{
-        Connection {
-            from,
-            weight,
-            err: 0.0,
-            to,
+impl WeightMatrix{
+    pub fn new(left_size: usize, right_size: usize, rng:&mut impl Random) -> Self{
+        let mut matrix = vec![Vec::with_capacity(right_size); left_size];
+        for i in 0..left_size {
+            for j in 0..right_size {
+                matrix[i][j] = rng.rand_float();
+            }
         }
+        WeightMatrix(matrix)
+     }
+    
+    pub fn compute(&self, input: &[f32]) -> Vec<f32> {
+        let mut output = Vec::with_capacity(self.0[0].len());
+        for c in 0..self.0[0].len() {
+            let mut sum = 0.0;
+            for r in 0..self.0.len() {
+                sum += input[r] * self.0[r][c];
+            }
+            output.push(sum);
+        }
+        output
     }
-}
-
-impl <F: Out, T: In + BackProp> Learn for Connection <F, T>{
-    fn learn(&mut self){
-        self.weight -= self.err;
-    }
-    fn get_feedback(&mut self, feedback: f32){
-        self.err *= feedback;
-    }
-}
-
-impl <T: ConnectsFrom> BackProp for Connection <InputNode<T>, T>{
-    fn send_feedback(&mut self){
-        //nothing
-    }
-}
-
-impl <F:  Out + Learn, T: In> BackProp for Connection<F,T>{
-    fn send_feedback(&mut self){
-        self.from.borrow_mut().get_feedback(self.err * self.weight);
-    }
-}
-
-impl <F:  Out, T: In> Connection<F,T>  {
-    pub fn send_fronward(&mut self, out: f32){
-        self.err = out;
-        self.to.borrow_mut().recieve(out);
+    
+    pub fn learn(
+        &mut self, 
+        former_input: &[f32],
+        feedback: &[f32],
+        rate: f32
+    ) -> Vec<f32> {
+        let mut output = Vec::with_capacity(self.0.len());
+        for r in 0..self.0.len() {
+            let mut sum = 0.0;
+            for c in 0..self.0[0].len() {
+                let err = former_input[r] * feedback[c];
+                self.0[r][c] -= rate * err;
+                sum += self.0[r][c] * err;
+            }
+            output[r] = sum;
+        }
+        output
     }
 }

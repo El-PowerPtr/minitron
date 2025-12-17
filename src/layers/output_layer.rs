@@ -1,58 +1,46 @@
 use crate::{
-    conn::connection::ConnectsTo,
     nodes::{
-        node::Node,
-        output::Out,
-        learn::Learn,
         output_node::OutputNode,
+        label::Label,
     },
-    learning_rate::{
-        LearningRateManager,
-        Random,
-    },
-    compare_floats,
-    MultiRef,
-    SharedRef,
-    new_multi_ref,
+    Random,
 };
 use super::layer::Layer;
 
-pub struct OutputLayer <I: ConnectsTo + Learn, M: LearningRateManager + Random, T: Clone> {
-    nodes:Vec< MultiRef<OutputNode<I,M,T>>>,
-    learning_manager: SharedRef<M>,
+pub struct OutputLayer <T: Clone> {
+    nodes:Vec<OutputNode<T>>,
 }
 
-impl <I: ConnectsTo + Learn, M: LearningRateManager + Random, T: Clone> Layer<OutputNode<I,M,T>, M> for OutputLayer <I,M,T> {
-
-    #[inline]
-    fn neurons(&self) -> &Vec<MultiRef<OutputNode<I,M,T>>>{
-        &self.nodes
-    }
-    
-    fn fresh(neuron_ammount: i32,learning_manager: SharedRef<M>) -> Self{
-        let mut this = OutputLayer {
-            learning_manager,
-            nodes: vec![],
-        };
-        for _ in 0..neuron_ammount {
-            let node = OutputNode::new(this.learning_manager.borrow_mut().rand_float(), this.learning_manager.clone());
-            let node_ref = new_multi_ref(node);
-            this.nodes.push(node_ref);
-        }
-        this
-    }
-    
-    fn pass_info(&mut self) {
-        for node in &mut self.nodes {
-            (**node).borrow_mut().forward_prop();
-        }
+impl <T: Clone> Layer<OutputNode<T>> for OutputLayer <T> {
+    fn forward_prop(&self, input: &[f32]) -> Vec<f32> {
+        self.nodes
+            .iter()
+            .zip(input)
+            .map(|(x,y)| x.activation(*y))
+            .collect()
     }
 }
 
-impl  <I: ConnectsTo + Learn, M: LearningRateManager + Random, T: Clone> OutputLayer <I,M,T> {
-    pub fn winner(&self) -> Option<MultiRef<OutputNode<I,M,T>>> {
-        self.nodes.iter()
-                    .max_by(|x, y| compare_floats(&(**x).borrow().val(), &(**y).borrow().val()))
-                    .cloned()
+impl  <T: Clone> OutputLayer <T> {
+    pub fn winner(&self, outputs: &[f32]) -> &OutputNode<T> {
+        let mut max = 0;
+        for i in 0..outputs.len() {
+            if outputs[i] > outputs[max] {
+                max = i;
+            }
+        }
+        &self.nodes[max]
+    }
+    
+    fn fresh<I, R>(labels: I , rng: &mut R) -> Self
+    where
+        I: IntoIterator<Item=Label<T>>,
+        R: Random
+    {
+        OutputLayer {
+            nodes: labels.into_iter()
+                         .map(|x| OutputNode::new(x, rng))
+                         .collect(),
+        }
     }
 }

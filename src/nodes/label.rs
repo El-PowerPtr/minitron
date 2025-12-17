@@ -20,4 +20,12 @@ impl<T: Clone> Label <T> {
             self.clone()
         }
     }
+    
+    pub fn get_err(&self, val: f32) -> f32 {
+        if let Label::Training{expected_val, ..} = self {
+            (expected_val - val).abs()
+        } else {
+            panic!("Attempt to eval result from an usage label")
+        }
+    }
 }
